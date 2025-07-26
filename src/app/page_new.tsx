@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
-import { 
-  Search, 
-  Target, 
-  Users, 
-  TrendingUp, 
+import {
+  Search,
+  Target,
+  Users,
+  TrendingUp,
   Briefcase,
   Star,
   MapPin,
@@ -35,7 +35,7 @@ export default function Home() {
               Encuentra el <span className="text-blue-200">trabajo perfecto</span> para ti
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-              Nuestra plataforma de inteligencia artificial te conecta con oportunidades laborales 
+              Nuestra plataforma de inteligencia artificial te conecta con oportunidades laborales
               que coinciden perfectamente con tu perfil y habilidades.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -45,9 +45,9 @@ export default function Home() {
                 </Button>
               </Link>
               <Link href="/jobs">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
+                <Button
+                  size="lg"
+                  variant="outline"
                   className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-4"
                 >
                   Explorar Trabajos
@@ -188,7 +188,7 @@ export default function Home() {
                     </div>
                     <Star className="h-5 w-5 text-gray-300" />
                   </div>
-                  
+
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-gray-600 text-sm">
                       <MapPin className="h-4 w-4 mr-2" />
@@ -203,9 +203,9 @@ export default function Home() {
                       {job.posted}
                     </div>
                   </div>
-                  
+
                   <div className="text-green-600 font-semibold mb-4">{job.salary}</div>
-                  
+
                   <Button className="w-full" variant="outline">
                     Ver Detalles
                   </Button>
@@ -254,7 +254,7 @@ export default function Home() {
                 La plataforma de recomendación de trabajos más avanzada del mercado.
               </p>
             </div>
-            
+
             <div>
               <h3 className="font-semibold mb-4">Plataforma</h3>
               <ul className="space-y-2 text-gray-400">
@@ -263,7 +263,7 @@ export default function Home() {
                 <li><Link href="/salary" className="hover:text-white">Salarios</Link></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="font-semibold mb-4">Soporte</h3>
               <ul className="space-y-2 text-gray-400">
@@ -272,7 +272,7 @@ export default function Home() {
                 <li><Link href="/faq" className="hover:text-white">FAQ</Link></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="font-semibold mb-4">Legal</h3>
               <ul className="space-y-2 text-gray-400">
@@ -282,7 +282,7 @@ export default function Home() {
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
             <p>&copy; 2025 JobMatch. Todos los derechos reservados.</p>
           </div>
