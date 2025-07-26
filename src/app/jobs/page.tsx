@@ -12,7 +12,6 @@ import {
   Briefcase, 
   Clock, 
   Star,
-  Filter,
   SlidersHorizontal,
   BookmarkPlus,
   Eye,
@@ -193,7 +192,7 @@ export default function JobsPage() {
     setFilteredJobs(filtered);
   }, [filters, jobs]);
 
-  const handleFilterChange = (key: keyof JobSearchFilters, value: any) => {
+  const handleFilterChange = (key: keyof JobSearchFilters, value: string | number | boolean | undefined) => {
     setFilters(prev => ({
       ...prev,
       [key]: value

@@ -49,9 +49,13 @@ export default function LoginPage() {
     try {
       await login(email, password);
       router.push('/dashboard');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error && 'response' in error 
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : 'Error al iniciar sesión. Verifica tus credenciales.';
+      
       setErrors({
-        general: error.response?.data?.message || 'Error al iniciar sesión. Verifica tus credenciales.',
+        general: errorMessage || 'Error al iniciar sesión. Verifica tus credenciales.',
       });
     } finally {
       setLoading(false);

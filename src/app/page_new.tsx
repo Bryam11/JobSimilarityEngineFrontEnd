@@ -9,7 +9,6 @@ import {
   Search,
   Target,
   Users,
-  TrendingUp,
   Briefcase,
   Star,
   MapPin,

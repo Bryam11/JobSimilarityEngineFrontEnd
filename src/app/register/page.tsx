@@ -22,7 +22,7 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  
+
   const { register } = useAuth();
   const router = useRouter();
 
@@ -32,7 +32,7 @@ export default function RegisterPage() {
       ...prev,
       [name]: value
     }));
-    
+
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[name]) {
       setErrors(prev => ({
@@ -44,42 +44,42 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validaciones
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'El nombre es requerido';
     } else if (formData.fullName.trim().length < 2) {
       newErrors.fullName = 'El nombre debe tener al menos 2 caracteres';
     }
-    
+
     if (!formData.email) {
       newErrors.email = 'El email es requerido';
     } else if (!validateEmail(formData.email)) {
       newErrors.email = 'Ingresa un email válido';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'La contraseña es requerida';
     } else if (formData.password.length < 6) {
       newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
     }
-    
+
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Confirma tu contraseña';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Las contraseñas no coinciden';
     }
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    
+
     setErrors({});
     setLoading(true);
-    
+
     try {
       await register({
         fullName: formData.fullName.trim(),
@@ -89,9 +89,9 @@ export default function RegisterPage() {
         company: formData.company.trim() || undefined,
       });
       router.push('/dashboard');
-    } catch (error: any) {
+    } catch (error) {
       setErrors({
-        general: error.response?.data?.message || 'Error al crear la cuenta. Inténtalo de nuevo.',
+        general: 'Error al crear la cuenta. Verifica tus datos e intenta nuevamente.' + (error instanceof Error ? `: ${error.message}` : ''),
       });
     } finally {
       setLoading(false);
