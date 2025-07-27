@@ -17,84 +17,8 @@ import {
   Eye
 } from 'lucide-react';
 import { Job } from '@/types';
+import { jobService } from '@/lib/services';
 import { formatRelativeTime, formatSalary, getJobTypeLabel } from '@/lib/utils';
-
-// Mock data para el demo
-const mockRecommendedJobs: Job[] = [
-  {
-    id: '1',
-    title: 'Desarrollador Full Stack Senior',
-    company: 'TechCorp',
-    location: 'Madrid, España',
-    type: 'full-time',
-    salary: { min: 50000, max: 70000, currency: 'EUR' },
-    description: 'Buscamos un desarrollador Full Stack con experiencia en React y Node.js',
-    requirements: ['React', 'Node.js', 'TypeScript', 'PostgreSQL'],
-    skills: ['JavaScript', 'React', 'Node.js', 'TypeScript', 'PostgreSQL'],
-    postedDate: '2025-01-07T10:00:00Z',
-    remote: false,
-    logo: '/company-logos/techcorp.png'
-  },
-  {
-    id: '2',
-    title: 'Diseñador UX/UI',
-    company: 'DesignStudio',
-    location: 'Barcelona, España',
-    type: 'full-time',
-    salary: { min: 40000, max: 55000, currency: 'EUR' },
-    description: 'Únete a nuestro equipo de diseño para crear experiencias increíbles',
-    requirements: ['Figma', 'Adobe XD', 'Prototipado', 'User Research'],
-    skills: ['Figma', 'Adobe XD', 'User Research', 'Prototipado'],
-    postedDate: '2025-01-06T14:30:00Z',
-    remote: true,
-    logo: '/company-logos/designstudio.png'
-  },
-  {
-    id: '3',
-    title: 'Data Scientist',
-    company: 'DataLab',
-    location: 'Valencia, España',
-    type: 'full-time',
-    salary: { min: 55000, max: 75000, currency: 'EUR' },
-    description: 'Análisis de datos y machine learning para productos innovadores',
-    requirements: ['Python', 'TensorFlow', 'SQL', 'Estadística'],
-    skills: ['Python', 'TensorFlow', 'Pandas', 'SQL', 'Machine Learning'],
-    postedDate: '2025-01-05T09:15:00Z',
-    remote: false,
-    logo: '/company-logos/datalab.png'
-  }
-];
-
-const mockRecentJobs: Job[] = [
-  {
-    id: '4',
-    title: 'Frontend Developer',
-    company: 'StartupX',
-    location: 'Sevilla, España',
-    type: 'contract',
-    salary: { min: 35000, max: 45000, currency: 'EUR' },
-    description: 'Desarrollo de interfaces modernas con React',
-    requirements: ['React', 'CSS', 'JavaScript'],
-    skills: ['React', 'CSS', 'JavaScript', 'HTML'],
-    postedDate: '2025-01-08T11:00:00Z',
-    remote: true,
-    logo: '/company-logos/startupx.png'
-  },
-  {
-    id: '5',
-    title: 'DevOps Engineer',
-    company: 'CloudTech',
-    location: 'Bilbao, España',
-    type: 'full-time',
-    salary: { min: 60000, max: 80000, currency: 'EUR' },
-    description: 'Infraestructura en la nube y automatización',
-    requirements: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
-    skills: ['AWS', 'Docker', 'Kubernetes', 'Terraform'],
-    postedDate: '2025-01-08T16:20:00Z',
-    remote: false,
-    logo: '/company-logos/cloudtech.png'
-  }
-];
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -103,19 +27,29 @@ export default function DashboardPage() {
   const [jobsLoading, setJobsLoading] = useState(true);
 
   useEffect(() => {
-    // Simular carga de datos
     const loadJobs = async () => {
-      // En una app real, aquí harías las llamadas a la API
-      setTimeout(() => {
-        setRecommendedJobs(mockRecommendedJobs);
-        setRecentJobs(mockRecentJobs);
+      if (!user) return;
+      
+      try {
+        setJobsLoading(true);
+        
+        // Cargar trabajos recomendados basados en el perfil del usuario
+        const recommendedQuery = user.professionalTitle || 'desarrollador';
+        const recommended = await jobService.getRecommendedJobs(recommendedQuery);
+        setRecommendedJobs(recommended.slice(0, 3));
+        
+        // Cargar trabajos recientes
+        const allJobs = await jobService.getAllJobs(0, 20);
+        setRecentJobs(allJobs.jobs.slice(0, 5));
+        
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+      } finally {
         setJobsLoading(false);
-      }, 1000);
+      }
     };
 
-    if (user) {
-      loadJobs();
-    }
+    loadJobs();
   }, [user]);
 
   if (loading) {
@@ -249,12 +183,14 @@ export default function DashboardPage() {
                             </div>
                             <div className="flex items-center">
                               <Briefcase className="h-4 w-4 mr-1" />
-                              {getJobTypeLabel(job.type)}
+                              {job.type ? getJobTypeLabel(job.type) : 'No especificado'}
                             </div>
-                            <div className="flex items-center">
-                              <Clock className="h-4 w-4 mr-1" />
-                              {formatRelativeTime(job.postedDate)}
-                            </div>
+                            {job.postedDate && (
+                              <div className="flex items-center">
+                                <Clock className="h-4 w-4 mr-1" />
+                                {formatRelativeTime(job.postedDate)}
+                              </div>
+                            )}
                           </div>
                         </div>
                         <button className="p-2 text-gray-400 hover:text-yellow-500">
@@ -265,12 +201,12 @@ export default function DashboardPage() {
                       <p className="text-gray-600 mb-4 line-clamp-2">{job.description}</p>
 
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {job.skills.slice(0, 4).map((skill, index) => (
+                        {job.skills && job.skills.slice(0, 4).map((skill, index) => (
                           <span key={index} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
                             {skill}
                           </span>
                         ))}
-                        {job.skills.length > 4 && (
+                        {job.skills && job.skills.length > 4 && (
                           <span className="text-gray-500 text-xs">+{job.skills.length - 4} más</span>
                         )}
                       </div>

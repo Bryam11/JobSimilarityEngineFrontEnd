@@ -1,5 +1,16 @@
 import api from './api';
-import { User, LoginResponse, RegisterData, Job, JobSearchFilters, ApiResponse } from '@/types';
+import {
+  User,
+  LoginResponse,
+  RegisterData,
+  Job,
+  JobSearchFilters,
+  ApiResponse,
+  SearchMethods,
+  RecommendationRequest,
+  RecommendationResponse,
+  JobsListResponse
+} from '@/types';
 import { jwtDecode } from 'jwt-decode';
 
 interface JWTPayload {
@@ -95,72 +106,134 @@ export const authService = {
 };
 
 export const jobService = {
-  searchJobs: async (filters: JobSearchFilters): Promise<Job[]> => {
-    // Como tu API no tiene endpoint de jobs aún, devolver datos mock
-    // Aquí implementarías la llamada real cuando esté disponible
-
-    console.warn('Mock job data returned. Implement API call when available.', filters);
-
-    const mockJobs: Job[] = [
-      {
-        id: '1',
-        title: 'Desarrollador Full Stack Senior',
-        company: 'TechCorp',
-        location: 'Madrid, España',
-        type: 'full-time',
-        salary: { min: 50000, max: 70000, currency: 'EUR' },
-        description: 'Buscamos un desarrollador Full Stack con experiencia en React y Node.js',
-        requirements: ['React', 'Node.js', 'TypeScript', 'PostgreSQL'],
-        skills: ['JavaScript', 'React', 'Node.js', 'TypeScript', 'PostgreSQL', 'AWS'],
-        postedDate: '2025-01-07T10:00:00Z',
-        remote: false
-      },
-      // ... más trabajos mock
-    ];
-
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(mockJobs);
-      }, 500);
-    });
+  // Obtener métodos de búsqueda disponibles
+  getSearchMethods: async (): Promise<SearchMethods> => {
+    const response = await api.get('/model/search-methods');
+    return response.data;
   },
 
-  getJobById: async (id: string): Promise<Job> => {
-    // Mock implementation
-    const mockJob: Job = {
-      id,
-      title: 'Desarrollador Full Stack Senior',
-      company: 'TechCorp',
-      location: 'Madrid, España',
-      type: 'full-time',
-      salary: { min: 50000, max: 70000, currency: 'EUR' },
-      description: 'Buscamos un desarrollador Full Stack con experiencia en React y Node.js',
-      requirements: ['React', 'Node.js', 'TypeScript', 'PostgreSQL'],
-      skills: ['JavaScript', 'React', 'Node.js', 'TypeScript', 'PostgreSQL', 'AWS'],
-      postedDate: '2025-01-07T10:00:00Z',
-      remote: false
+  // Buscar trabajos con recomendaciones por IA
+  searchJobsWithAI: async (request: RecommendationRequest): Promise<RecommendationResponse> => {
+    const response = await api.post('/model/recommend', request);
+
+    // Transformar los datos para que coincidan con nuestro interface Job
+    const transformedRecommendations = response.data.recommendations.map((job: Job) => ({
+      id: job.id,
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      description: job.description,
+      rank: job.rank,
+      similarity_score: job.similarity_score,
+      // Campos opcionales que no vienen de la API
+      type: undefined,
+      salary: undefined,
+      requirements: [],
+      skills: [],
+      postedDate: undefined,
+      remote: undefined,
+      logo: undefined
+    }));
+
+    return {
+      ...response.data,
+      recommendations: transformedRecommendations
     };
-
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(mockJob);
-      }, 300);
-    });
   },
 
-  getRecommendedJobs: async (): Promise<Job[]> => {
-    return jobService.searchJobs({
-      query: '',
-      location: '',
-      type: '',
-      remote: false,
-    });
+  // Obtener todos los trabajos (con paginación)
+  getAllJobs: async (skip: number = 0, limit: number = 100): Promise<JobsListResponse> => {
+    const response = await api.get(`/model/jobs?skip=${skip}&limit=${limit}`);
+
+    // Transformar los datos para que coincidan con nuestro interface Job
+    const transformedJobs = response.data.jobs.map((job: Job) => ({
+      id: job.id,
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      description: job.description,
+      // Campos opcionales que no vienen de la API
+      type: undefined,
+      salary: undefined,
+      requirements: [],
+      skills: [],
+      postedDate: undefined,
+      remote: undefined,
+      logo: undefined
+    }));
+
+    return {
+      ...response.data,
+      jobs: transformedJobs
+    };
   },
 
-  applyToJob: async (jobId: string): Promise<ApiResponse<{ applied: boolean }>> => {
+  // Método legacy para compatibilidad con búsqueda tradicional
+  searchJobs: async (filters: JobSearchFilters): Promise<Job[]> => {
+    if (filters.query) {
+      // Si hay una query, usar el sistema de recomendaciones IA
+      const recommendations = await jobService.searchJobsWithAI({
+        query: filters.query,
+        top_n: 20,
+        method: 'hybrid'
+      });
+      return recommendations.recommendations;
+    } else {
+      // Si no hay query, obtener trabajos generales
+      const jobsList = await jobService.getAllJobs(0, 50);
+      return jobsList.jobs;
+    }
+  },
+
+  getJobById: async (id: string | number): Promise<Job> => {
+    // Buscar el trabajo en la lista general primero
+    try {
+      const jobsList = await jobService.getAllJobs(0, 1000); // Obtener más trabajos para buscar
+      const job = jobsList.jobs.find(j => j.id.toString() === id.toString());
+
+      if (job) {
+        return job;
+      }
+    } catch (error) {
+      console.error('Error fetching job by ID:', error);
+    }
+
+    // Si no se encuentra, devolver un trabajo mock
+    return {
+      id,
+      title: 'Trabajo no encontrado',
+      company: 'N/A',
+      location: 'N/A',
+      description: 'Este trabajo no está disponible en este momento.',
+      type: undefined,
+      salary: undefined,
+      requirements: [],
+      skills: [],
+      postedDate: undefined,
+      remote: undefined
+    };
+  },
+
+  getRecommendedJobs: async (query: string = 'desarrollador'): Promise<Job[]> => {
+    try {
+      const recommendations = await jobService.searchJobsWithAI({
+        query,
+        top_n: 10,
+        method: 'hybrid'
+      });
+      return recommendations.recommendations;
+    } catch (error) {
+      console.error('Error getting recommended jobs:', error);
+      // Fallback a trabajos generales si falla la recomendación
+      const jobsList = await jobService.getAllJobs(0, 10);
+      return jobsList.jobs;
+    }
+  },
+
+  applyToJob: async (jobId: string | number): Promise<ApiResponse<{ applied: boolean }>> => {
     console.log(`Applying to job with ID: ${jobId}`);
 
-    // Mock implementation
+    // Mock implementation - aquí implementarías el endpoint real cuando esté disponible
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({

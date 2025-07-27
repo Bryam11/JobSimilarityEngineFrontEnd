@@ -6,133 +6,33 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/Loading';
-import { 
-  Search, 
-  MapPin, 
-  Briefcase, 
-  Clock, 
+import {
+  Search,
+  MapPin,
+  Briefcase,
+  Clock,
   Star,
   SlidersHorizontal,
   BookmarkPlus,
   Eye,
-  X
+  X,
+  Sparkles,
+  Target,
+  Layers
 } from 'lucide-react';
-import { Job, JobSearchFilters } from '@/types';
+import { Job, JobSearchFilters, SearchMethods } from '@/types';
 import { formatRelativeTime, formatSalary, getJobTypeLabel } from '@/lib/utils';
-
-// Mock data ampliado para el demo
-const mockJobs: Job[] = [
-  {
-    id: '1',
-    title: 'Desarrollador Full Stack Senior',
-    company: 'TechCorp',
-    location: 'Madrid, España',
-    type: 'full-time',
-    salary: { min: 50000, max: 70000, currency: 'EUR' },
-    description: 'Buscamos un desarrollador Full Stack con experiencia en React y Node.js para unirse a nuestro equipo dinámico. Trabajarás en proyectos emocionantes utilizando las últimas tecnologías.',
-    requirements: ['React', 'Node.js', 'TypeScript', 'PostgreSQL'],
-    skills: ['JavaScript', 'React', 'Node.js', 'TypeScript', 'PostgreSQL', 'AWS'],
-    postedDate: '2025-01-07T10:00:00Z',
-    remote: false
-  },
-  {
-    id: '2',
-    title: 'Diseñador UX/UI',
-    company: 'DesignStudio',
-    location: 'Barcelona, España',
-    type: 'full-time',
-    salary: { min: 40000, max: 55000, currency: 'EUR' },
-    description: 'Únete a nuestro equipo de diseño para crear experiencias increíbles que deleiten a nuestros usuarios. Buscamos alguien con pasión por el diseño centrado en el usuario.',
-    requirements: ['Figma', 'Adobe XD', 'Prototipado', 'User Research'],
-    skills: ['Figma', 'Adobe XD', 'User Research', 'Prototipado', 'Sketch'],
-    postedDate: '2025-01-06T14:30:00Z',
-    remote: true
-  },
-  {
-    id: '3',
-    title: 'Data Scientist',
-    company: 'DataLab',
-    location: 'Valencia, España',
-    type: 'full-time',
-    salary: { min: 55000, max: 75000, currency: 'EUR' },
-    description: 'Análisis de datos y machine learning para productos innovadores. Trabajarás con grandes conjuntos de datos para extraer insights valiosos.',
-    requirements: ['Python', 'TensorFlow', 'SQL', 'Estadística'],
-    skills: ['Python', 'TensorFlow', 'Pandas', 'SQL', 'Machine Learning', 'R'],
-    postedDate: '2025-01-05T09:15:00Z',
-    remote: false
-  },
-  {
-    id: '4',
-    title: 'Frontend Developer',
-    company: 'StartupX',
-    location: 'Sevilla, España',
-    type: 'contract',
-    salary: { min: 35000, max: 45000, currency: 'EUR' },
-    description: 'Desarrollo de interfaces modernas con React para una startup en crecimiento. Oportunidad única de trabajar en un ambiente dinámico.',
-    requirements: ['React', 'CSS', 'JavaScript'],
-    skills: ['React', 'CSS', 'JavaScript', 'HTML', 'Sass'],
-    postedDate: '2025-01-08T11:00:00Z',
-    remote: true
-  },
-  {
-    id: '5',
-    title: 'DevOps Engineer',
-    company: 'CloudTech',
-    location: 'Bilbao, España',
-    type: 'full-time',
-    salary: { min: 60000, max: 80000, currency: 'EUR' },
-    description: 'Infraestructura en la nube y automatización. Buscamos alguien que sea apasionado de la automatización y las mejores prácticas DevOps.',
-    requirements: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
-    skills: ['AWS', 'Docker', 'Kubernetes', 'Terraform', 'Jenkins'],
-    postedDate: '2025-01-08T16:20:00Z',
-    remote: false
-  },
-  {
-    id: '6',
-    title: 'Product Manager',
-    company: 'InnovateCorp',
-    location: 'Remoto',
-    type: 'full-time',
-    salary: { min: 65000, max: 85000, currency: 'EUR' },
-    description: 'Gestión de producto para aplicaciones SaaS. Lidera el desarrollo de productos desde la concepción hasta el lanzamiento.',
-    requirements: ['Product Management', 'Agile', 'Analytics', 'SQL'],
-    skills: ['Product Management', 'Agile', 'Scrum', 'Analytics', 'SQL', 'Jira'],
-    postedDate: '2025-01-04T13:45:00Z',
-    remote: true
-  },
-  {
-    id: '7',
-    title: 'Backend Developer Java',
-    company: 'Enterprise Solutions',
-    location: 'Zaragoza, España',
-    type: 'full-time',
-    salary: { min: 45000, max: 60000, currency: 'EUR' },
-    description: 'Desarrollo de aplicaciones empresariales con Java y Spring. Trabajarás en sistemas de alta concurrencia y disponibilidad.',
-    requirements: ['Java', 'Spring Boot', 'PostgreSQL', 'Docker'],
-    skills: ['Java', 'Spring Boot', 'PostgreSQL', 'Docker', 'Maven', 'Git'],
-    postedDate: '2025-01-03T08:30:00Z',
-    remote: false
-  },
-  {
-    id: '8',
-    title: 'QA Automation Engineer',
-    company: 'QualityFirst',
-    location: 'Málaga, España',
-    type: 'full-time',
-    salary: { min: 38000, max: 50000, currency: 'EUR' },
-    description: 'Automatización de pruebas para aplicaciones web y móviles. Asegura la calidad del software mediante testing automatizado.',
-    requirements: ['Selenium', 'Cypress', 'JavaScript', 'Testing'],
-    skills: ['Selenium', 'Cypress', 'JavaScript', 'Testing', 'Pytest', 'API Testing'],
-    postedDate: '2025-01-02T15:20:00Z',
-    remote: true
-  }
-];
+import { jobService } from '@/lib/services';
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
+  const [searchMethods, setSearchMethods] = useState<SearchMethods | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<'title_only' | 'combined' | 'hybrid'>('hybrid');
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalJobs, setTotalJobs] = useState(0);
   const [filters, setFilters] = useState<JobSearchFilters>({
     query: '',
     location: '',
@@ -142,63 +42,75 @@ export default function JobsPage() {
     salaryMax: undefined
   });
 
+  // Cargar métodos de búsqueda al montar el componente
   useEffect(() => {
-    // Simular carga de datos
-    setTimeout(() => {
-      setJobs(mockJobs);
-      setFilteredJobs(mockJobs);
-      setLoading(false);
-    }, 1000);
+    const loadSearchMethods = async () => {
+      try {
+        const methods = await jobService.getSearchMethods();
+        setSearchMethods(methods);
+        setSelectedMethod(methods.recommended as 'title_only' | 'combined' | 'hybrid');
+      } catch (error) {
+        console.error('Error loading search methods:', error);
+      }
+    };
+
+    loadSearchMethods();
   }, []);
 
+  // Cargar trabajos iniciales
   useEffect(() => {
-    // Aplicar filtros
-    let filtered = jobs;
+    const loadInitialJobs = async () => {
+      try {
+        setLoading(true);
+        const jobsList = await jobService.getAllJobs(0, 50);
+        setJobs(jobsList.jobs);
+        setTotalJobs(jobsList.total);
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (filters.query) {
-      filtered = filtered.filter(job => 
-        job.title.toLowerCase().includes(filters.query.toLowerCase()) ||
-        job.company.toLowerCase().includes(filters.query.toLowerCase()) ||
-        job.skills.some(skill => skill.toLowerCase().includes(filters.query.toLowerCase()))
-      );
+    loadInitialJobs();
+  }, []);
+
+  // Función para buscar trabajos
+  const handleSearch = async () => {
+    if (!filters.query.trim()) {
+      // Si no hay query, cargar trabajos generales
+      const jobsList = await jobService.getAllJobs(currentPage * 50, 50);
+      setJobs(jobsList.jobs);
+      setTotalJobs(jobsList.total);
+      return;
     }
 
-    if (filters.location) {
-      filtered = filtered.filter(job => 
-        job.location.toLowerCase().includes(filters.location.toLowerCase())
-      );
+    try {
+      setSearching(true);
+      const recommendations = await jobService.searchJobsWithAI({
+        query: filters.query,
+        top_n: 20,
+        method: selectedMethod
+      });
+
+      setJobs(recommendations.recommendations);
+      setTotalJobs(recommendations.total_results);
+    } catch (error) {
+      console.error('Error searching jobs:', error);
+    } finally {
+      setSearching(false);
     }
+  };
 
-    if (filters.type) {
-      filtered = filtered.filter(job => job.type === filters.type);
-    }
-
-    if (filters.remote) {
-      filtered = filtered.filter(job => job.remote);
-    }
-
-    if (filters.salaryMin) {
-      filtered = filtered.filter(job => 
-        job.salary && job.salary.min >= filters.salaryMin!
-      );
-    }
-
-    if (filters.salaryMax) {
-      filtered = filtered.filter(job => 
-        job.salary && job.salary.max <= filters.salaryMax!
-      );
-    }
-
-    setFilteredJobs(filtered);
-  }, [filters, jobs]);
-
-  const handleFilterChange = (key: keyof JobSearchFilters, value: string | number | boolean | undefined) => {
+  // Manejar cambio en los filtros
+  const handleFilterChange = (field: keyof JobSearchFilters, value: string | boolean | number | undefined) => {
     setFilters(prev => ({
       ...prev,
-      [key]: value
+      [field]: value
     }));
   };
 
+  // Limpiar filtros
   const clearFilters = () => {
     setFilters({
       query: '',
@@ -210,11 +122,40 @@ export default function JobsPage() {
     });
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => 
+  // Cargar más trabajos (paginación)
+  const loadMoreJobs = async () => {
+    try {
+      setLoading(true);
+      const nextPage = currentPage + 1;
+      const jobsList = await jobService.getAllJobs(nextPage * 50, 50);
+      setJobs(prev => [...prev, ...jobsList.jobs]);
+      setCurrentPage(nextPage);
+    } catch (error) {
+      console.error('Error loading more jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Obtener icono para el método de búsqueda
+  const getMethodIcon = (method: string) => {
+    switch (method) {
+      case 'title_only':
+        return <Target className="h-4 w-4" />;
+      case 'combined':
+        return <Layers className="h-4 w-4" />;
+      case 'hybrid':
+        return <Sparkles className="h-4 w-4" />;
+      default:
+        return <Search className="h-4 w-4" />;
+    }
+  };
+
+  const hasActiveFilters = Object.values(filters).some(value =>
     value !== '' && value !== false && value !== undefined
   );
 
-  if (loading) {
+  if (loading && jobs.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -234,9 +175,47 @@ export default function JobsPage() {
             Buscar Trabajos
           </h1>
           <p className="text-gray-600">
-            Encuentra tu próxima oportunidad profesional
+            Encuentra tu próxima oportunidad profesional con IA
           </p>
         </div>
+
+        {/* Search Methods Selector */}
+        {searchMethods && (
+          <Card className="mb-4">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="text-sm font-medium text-gray-700">
+                  Método de búsqueda:
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(searchMethods.methods).map(([key, method]) => (
+                    <button
+                      key={key}
+                      onClick={() => setSelectedMethod(key as 'title_only' | 'combined' | 'hybrid')}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${selectedMethod === key
+                          ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                    >
+                      {getMethodIcon(key)}
+                      {method.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {searchMethods.methods[selectedMethod] && (
+                <div className="mt-3 p-3 bg-blue-50 rounded-md">
+                  <p className="text-sm text-blue-800">
+                    <strong>{searchMethods.methods[selectedMethod].description}</strong>
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    {searchMethods.methods[selectedMethod].use_case}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Search Bar */}
         <Card className="mb-6">
@@ -249,6 +228,7 @@ export default function JobsPage() {
                   value={filters.query}
                   onChange={(e) => handleFilterChange('query', e.target.value)}
                   className="pl-10"
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 />
               </div>
               <div className="relative">
@@ -257,36 +237,46 @@ export default function JobsPage() {
                   placeholder="Ubicación"
                   value={filters.location}
                   onChange={(e) => handleFilterChange('location', e.target.value)}
-                  className="pl-10 md:w-48"
+                  className="pl-10"
                 />
               </div>
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center"
-              >
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
-                Filtros
-                {hasActiveFilters && (
-                  <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                    {Object.values(filters).filter(v => v !== '' && v !== false && v !== undefined).length}
-                  </span>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSearch}
+                  disabled={searching}
+                  className="px-6"
+                >
+                  {searching ? (
+                    <>
+                      <LoadingSpinner size="sm" className="mr-2" />
+                      Buscando...
+                    </>
+                  ) : (
+                    'Buscar'
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <SlidersHorizontal className="h-4 w-4 mr-2" />
+                  Filtros
+                </Button>
+              </div>
             </div>
 
-            {/* Filtros Expandidos */}
+            {/* Advanced Filters */}
             {showFilters && (
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="grid md:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tipo de Trabajo
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tipo de trabajo
                     </label>
                     <select
                       value={filters.type}
                       onChange={(e) => handleFilterChange('type', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border border-gray-300 rounded-md"
                     >
                       <option value="">Todos</option>
                       <option value="full-time">Tiempo completo</option>
@@ -297,49 +287,54 @@ export default function JobsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Salario Mínimo (€)
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Trabajo remoto
                     </label>
-                    <Input
-                      type="number"
-                      placeholder="30000"
-                      value={filters.salaryMin || ''}
-                      onChange={(e) => handleFilterChange('salaryMin', e.target.value ? parseInt(e.target.value) : undefined)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Salario Máximo (€)
-                    </label>
-                    <Input
-                      type="number"
-                      placeholder="80000"
-                      value={filters.salaryMax || ''}
-                      onChange={(e) => handleFilterChange('salaryMax', e.target.value ? parseInt(e.target.value) : undefined)}
-                    />
-                  </div>
-
-                  <div className="flex items-end">
-                    <label className="flex items-center space-x-2">
+                    <label className="flex items-center">
                       <input
                         type="checkbox"
                         checked={filters.remote}
                         onChange={(e) => handleFilterChange('remote', e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="mr-2"
                       />
-                      <span className="text-sm text-gray-700">Solo trabajos remotos</span>
+                      Solo trabajos remotos
                     </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Salario mínimo (€)
+                    </label>
+                    <Input
+                      type="number"
+                      value={filters.salaryMin || ''}
+                      onChange={(e) => handleFilterChange('salaryMin', e.target.value ? parseInt(e.target.value) : undefined)}
+                      placeholder="30000"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Salario máximo (€)
+                    </label>
+                    <Input
+                      type="number"
+                      value={filters.salaryMax || ''}
+                      onChange={(e) => handleFilterChange('salaryMax', e.target.value ? parseInt(e.target.value) : undefined)}
+                      placeholder="80000"
+                    />
                   </div>
                 </div>
 
                 {hasActiveFilters && (
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-sm text-gray-600">
-                      {filteredJobs.length} trabajos encontrados
-                    </span>
-                    <Button variant="ghost" onClick={clearFilters} className="text-sm">
-                      <X className="h-4 w-4 mr-1" />
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Filtros activos:</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearFilters}
+                    >
+                      <X className="h-3 w-3 mr-1" />
                       Limpiar filtros
                     </Button>
                   </div>
@@ -351,20 +346,24 @@ export default function JobsPage() {
 
         {/* Results */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {filteredJobs.length} Trabajos Encontrados
-          </h2>
-          <select className="px-3 py-2 border border-gray-300 rounded-md text-sm">
-            <option>Más recientes</option>
-            <option>Mejor puntuados</option>
-            <option>Salario más alto</option>
-            <option>Salario más bajo</option>
-          </select>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {jobs.length > 0 ? `${jobs.length} trabajos encontrados` : 'No hay trabajos disponibles'}
+            </h2>
+            {filters.query && (
+              <span className="text-sm text-gray-500">
+                para &quot;{filters.query}&quot; usando método {searchMethods?.methods[selectedMethod]?.name}
+              </span>
+            )}
+          </div>
+          <div className="text-sm text-gray-500">
+            Total disponibles: {totalJobs.toLocaleString()}
+          </div>
         </div>
 
         {/* Job Cards */}
         <div className="space-y-6">
-          {filteredJobs.map((job) => (
+          {jobs.map((job: Job) => (
             <Card key={job.id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
@@ -373,8 +372,13 @@ export default function JobsPage() {
                       <h3 className="text-xl font-semibold text-gray-900 mr-3">
                         {job.title}
                       </h3>
+                      {job.rank && (
+                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                          #{job.rank}
+                        </span>
+                      )}
                       {job.remote && (
-                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">
                           Remoto
                         </span>
                       )}
@@ -385,14 +389,24 @@ export default function JobsPage() {
                         <MapPin className="h-4 w-4 mr-1" />
                         {job.location}
                       </div>
-                      <div className="flex items-center">
-                        <Briefcase className="h-4 w-4 mr-1" />
-                        {getJobTypeLabel(job.type)}
-                      </div>
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {formatRelativeTime(job.postedDate)}
-                      </div>
+                      {job.type && (
+                        <div className="flex items-center">
+                          <Briefcase className="h-4 w-4 mr-1" />
+                          {getJobTypeLabel(job.type)}
+                        </div>
+                      )}
+                      {job.postedDate && (
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-1" />
+                          {formatRelativeTime(job.postedDate)}
+                        </div>
+                      )}
+                      {job.similarity_score && (
+                        <div className="flex items-center">
+                          <Sparkles className="h-4 w-4 mr-1" />
+                          {Math.round(job.similarity_score * 100)}% relevancia
+                        </div>
+                      )}
                     </div>
                   </div>
                   <button className="p-2 text-gray-400 hover:text-yellow-500 transition-colors">
@@ -402,13 +416,18 @@ export default function JobsPage() {
 
                 <p className="text-gray-600 mb-4 leading-relaxed">{job.description}</p>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {job.skills.map((skill, index) => (
-                    <span key={index} className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
+                {job.skills && job.skills.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {job.skills.slice(0, 6).map((skill: string, index: number) => (
+                      <span key={index} className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">
+                        {skill}
+                      </span>
+                    ))}
+                    {job.skills.length > 6 && (
+                      <span className="text-gray-500 text-sm">+{job.skills.length - 6} más</span>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between">
                   <div className="text-green-600 font-bold text-lg">
@@ -431,7 +450,7 @@ export default function JobsPage() {
             </Card>
           ))}
 
-          {filteredJobs.length === 0 && (
+          {jobs.length === 0 && !loading && (
             <Card>
               <CardContent className="p-12 text-center">
                 <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -439,30 +458,39 @@ export default function JobsPage() {
                   No se encontraron trabajos
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  Intenta ajustar tus filtros o términos de búsqueda
+                  {filters.query
+                    ? 'Intenta con otros términos de búsqueda o cambia el método de búsqueda'
+                    : 'No hay trabajos disponibles en este momento'
+                  }
                 </p>
-                <Button onClick={clearFilters}>
-                  Limpiar filtros
-                </Button>
+                {filters.query && (
+                  <Button onClick={clearFilters}>
+                    Limpiar búsqueda
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}
         </div>
 
-        {/* Pagination */}
-        {filteredJobs.length > 0 && (
+        {/* Load More */}
+        {jobs.length > 0 && jobs.length < totalJobs && !filters.query && (
           <div className="mt-8 flex justify-center">
-            <div className="flex space-x-2">
-              <Button variant="outline" disabled>
-                Anterior
-              </Button>
-              <Button className="bg-blue-600 text-white">1</Button>
-              <Button variant="outline">2</Button>
-              <Button variant="outline">3</Button>
-              <Button variant="outline">
-                Siguiente
-              </Button>
-            </div>
+            <Button
+              onClick={loadMoreJobs}
+              disabled={loading}
+              variant="outline"
+              className="px-8"
+            >
+              {loading ? (
+                <>
+                  <LoadingSpinner size="sm" className="mr-2" />
+                  Cargando...
+                </>
+              ) : (
+                'Cargar más trabajos'
+              )}
+            </Button>
           </div>
         )}
       </div>
