@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import { User, AuthContextType, RegisterData } from '@/types';
 import { authService } from '@/lib/services';
+import { encryptText } from '../lib/utils';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -15,7 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initializeAuth = async () => {
       const savedToken = Cookies.get('auth-token');
-      
+
       if (savedToken) {
         setToken(savedToken);
         try {
@@ -27,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setToken(null);
         }
       }
-      
+
       setLoading(false);
     };
 
@@ -36,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await authService.login(email, password);
+      const response = await authService.login(encryptText(email), encryptText(password));
       setUser(response.user);
       setToken(response.token);
       Cookies.set('auth-token', response.token, { expires: 7 }); // 7 días
@@ -47,6 +48,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (userData: RegisterData) => {
     try {
+      userData.email = encryptText(userData.email);
+      userData.password = encryptText(userData.password);
+      userData.fullName = encryptText(userData.fullName);
+      userData.professionalTitle = encryptText(userData.professionalTitle || '');
+      userData.company = encryptText(userData.company || '');
       const response = await authService.register(userData);
       setUser(response.user);
       setToken(response.token);

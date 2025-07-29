@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import CryptoJS from "crypto-js";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -48,12 +49,18 @@ export function validateEmail(email: string): boolean {
 }
 
 export function generateInitials(name: string): string {
-  if (!name) return 'U';
-  
-  return name
-    .split(' ')
-    .map(word => word.charAt(0))
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+    if (!name) return 'U';
+
+    return name
+        .split(' ')
+        .map(word => word.charAt(0))
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+}
+
+const SECRET_KEY = "1234567890123456"; // Debe coincidir con el backend
+
+export function encryptText(text: string): string {
+    return CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
 }
