@@ -62,5 +62,10 @@ export function generateInitials(name: string): string {
 const SECRET_KEY = "1234567890123456"; // Debe coincidir con el backend
 
 export function encryptText(text: string): string {
-    return CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
+    const key = CryptoJS.enc.Utf8.parse(SECRET_KEY);
+    const encrypted = CryptoJS.AES.encrypt(text, key, {
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.Pkcs7
+    });
+    return encrypted.ciphertext.toString(CryptoJS.enc.Base64);
 }
